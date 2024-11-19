@@ -38,15 +38,16 @@ jobs:
         cd terratest
         go mod tidy
 
-    - name: Set Environment Variables
+    - name: Run Terratest
       env:
         subscription: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         client_id: ${{ secrets.ARM_CLIENT_ID }}
         client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
         tenant_id: ${{ secrets.ARM_TENANT_ID }}
-      run: echo "Environment variables set"
-
-    - name: Run Terratest
       run: |
         cd terratest
-        go test -v -timeout 10m
+        go test -v -timeout 10m \
+          -var="subscription=${{ secrets.AZURE_SUBSCRIPTION }}" \
+          -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+          -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+          -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}"
