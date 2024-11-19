@@ -38,11 +38,11 @@ jobs:
         go mod tidy
 
     - name: Run Terratest
-      env:
-        subscription: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        client_id: ${{ secrets.AZURE_CLIENT_ID }}
-        client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+      # env:
+      #   subscription: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      #   client_id: ${{ secrets.AZURE_CLIENT_ID }}
+      #   client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+      #   tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       run: |
         cd terratest
         go test -v -timeout 10m
