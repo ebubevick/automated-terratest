@@ -37,8 +37,15 @@ func TestTerraformAzureStorage(t *testing.T) {
 
 		// Variables to pass to Terraform code
 		Vars: map[string]interface{}{
-			"postfix": strings.ToLower(uniquePostfix),
+			"subscription":  subscription,
+			"client_id":     clientID,
+			"client_secret": clientSecret,
+			"tenant_id":     tenantID,
+			"postfix":       strings.ToLower(uniquePostfix),
 		},
+
+		// Disable prompt for input during tests
+		NoColor: true,
 	}
 
 	// Cleanup after test

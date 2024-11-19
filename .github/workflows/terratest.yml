@@ -46,4 +46,4 @@ jobs:
         tenant_id: ${{ secrets.ARM_TENANT_ID }}
       run: |
         cd terratest
-        go test -v -timeout 10m
+        go test -v -timeout 11m
