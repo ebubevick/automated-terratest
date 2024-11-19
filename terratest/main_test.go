@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -16,6 +17,18 @@ func TestTerraformAzureStorage(t *testing.T) {
 
 	// Use random postfix to ensure unique resources
 	uniquePostfix := random.UniqueId()
+
+	// Get the environment variables
+	subscription := os.Getenv("subscription")
+	clientID := os.Getenv("client_id")
+	clientSecret := os.Getenv("client_secret")
+	tenantID := os.Getenv("tenant_id")
+
+	// Ensure the variables are set
+	assert.NotEmpty(t, subscription)
+	assert.NotEmpty(t, clientID)
+	assert.NotEmpty(t, clientSecret)
+	assert.NotEmpty(t, tenantID)
 
 	// Configure Terraform
 	terraformOptions := &terraform.Options{

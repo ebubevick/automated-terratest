@@ -46,8 +46,4 @@ jobs:
         tenant_id: ${{ secrets.ARM_TENANT_ID }}
       run: |
         cd terratest
-        go test -v -timeout 10m \
-          -var="subscription=${{ secrets.AZURE_SUBSCRIPTION }}" \
-          -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
-          -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
-          -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}"
+        go test -v -timeout 10m
