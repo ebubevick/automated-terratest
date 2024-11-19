@@ -44,9 +44,6 @@ func TestTerraformAzureStorage(t *testing.T) {
 			"tenant_id":     tenantID,
 			"postfix":       strings.ToLower(uniquePostfix),
 		},
-
-		// Disable prompt for input during tests
-		NoColor: true,
 	}
 
 	// Cleanup after test
