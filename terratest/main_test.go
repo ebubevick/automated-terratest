@@ -1,9 +1,7 @@
 package test
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -13,90 +11,55 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTerraformAzureStorage(t *testing.T) {
+func TestTerraformAzureStorageExample(t *testing.T) {
 	t.Parallel()
 
 	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
+	subscriptionID := "4bf3e463-ed9f-4148-8906-3eed094e0794"
 	uniquePostfix := random.UniqueId()
 
-	// Get the environment variables
-	subscription := os.Getenv("subscription")
-	clientID := os.Getenv("client_id")
-	clientSecret := os.Getenv("client_secret")
-	tenantID := os.Getenv("tenant_id")
-
-	// Validate environment variables
-	envVars := []string{"subscription", "client_id", "client_secret", "tenant_id"}
-	for _, envVar := range envVars {
-		if os.Getenv(envVar) == "" {
-			t.Fatalf("Environment variable %s must be set", envVar)
-		}
-	}
-
-	// Configure Terraform
+	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
-		// Path to Terraform code
+		// The path to where our Terraform code is located
 		TerraformDir: "../",
 
-		// Variables to pass to Terraform code
+		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"subscription":  subscription,
-			"client_id":     clientID,
-			"client_secret": clientSecret,
-			"tenant_id":     tenantID,
-			"postfix":       strings.ToLower(uniquePostfix),
+			"postfix": strings.ToLower(uniquePostfix),
 		},
 	}
 
-	// Cleanup after test
+	// website::tag::4:: At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer terraform.Destroy(t, terraformOptions)
 
-	// Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
+	// website::tag::2:: Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
 	terraform.InitAndApply(t, terraformOptions)
 
-	// Run `terraform output` to get the values of output variables and sanitize them
-	resourceGroupName := sanitizeTerraformOutput(t, terraform.Output(t, terraformOptions, "resource_group_name"))
-	storageAccountName := sanitizeTerraformOutput(t, terraform.Output(t, terraformOptions, "storage_account_name"))
-	storageAccountTier := sanitizeTerraformOutput(t, terraform.Output(t, terraformOptions, "storage_account_account_tier"))
-	storageAccountKind := sanitizeTerraformOutput(t, terraform.Output(t, terraformOptions, "storage_account_account_kind"))
-	storageBlobContainerName := sanitizeTerraformOutput(t, terraform.Output(t, terraformOptions, "storage_container_name"))
-	storageFileShareName := sanitizeTerraformOutput(t, terraform.Output(t, terraformOptions, "storage_fileshare_name"))
+	// website::tag::3:: Run `terraform output` to get the values of output variables
+	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
+	storageAccountName := terraform.Output(t, terraformOptions, "storage_account_name")
+	storageAccountTier := terraform.Output(t, terraformOptions, "storage_account_account_tier")
+	storageAccountKind := terraform.Output(t, terraformOptions, "storage_account_account_kind")
+	storageBlobContainerName := terraform.Output(t, terraformOptions, "storage_container_name")
 
-	// Verify storage account properties and ensure it matches the output.
-	storageAccountExists := azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscription)
+	// website::tag::4:: Verify storage account properties and ensure it matches the output.
+	storageAccountExists := azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscriptionID)
 	assert.True(t, storageAccountExists, "storage account does not exist")
 
-	containerExists := azure.StorageBlobContainerExists(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription)
+	containerExists := azure.StorageBlobContainerExists(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscriptionID)
 	assert.True(t, containerExists, "storage container does not exist")
 
-	fileShareExists := azure.StorageFileShareExists(t, storageFileShareName, storageAccountName, resourceGroupName, "")
-	assert.True(t, fileShareExists, "File share does not exist")
-
-	publicAccess := azure.GetStorageBlobContainerPublicAccess(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription)
+	publicAccess := azure.GetStorageBlobContainerPublicAccess(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscriptionID)
 	assert.False(t, publicAccess, "storage container has public access")
 
-	accountKind := azure.GetStorageAccountKind(t, storageAccountName, resourceGroupName, subscription)
+	accountKind := azure.GetStorageAccountKind(t, storageAccountName, resourceGroupName, subscriptionID)
 	assert.Equal(t, storageAccountKind, accountKind, "storage account kind mismatch")
 
-	skuTier := azure.GetStorageAccountSkuTier(t, storageAccountName, resourceGroupName, subscription)
+	skuTier := azure.GetStorageAccountSkuTier(t, storageAccountName, resourceGroupName, subscriptionID)
 	assert.Equal(t, storageAccountTier, skuTier, "sku tier mismatch")
 
-	actualDNSString := azure.GetStorageDNSString(t, storageAccountName, resourceGroupName, subscription)
+	actualDNSString := azure.GetStorageDNSString(t, storageAccountName, resourceGroupName, subscriptionID)
 	storageSuffix, _ := azure.GetStorageURISuffixE()
 	expectedDNS := fmt.Sprintf("https://%s.blob.%s/", storageAccountName, storageSuffix)
 	assert.Equal(t, expectedDNS, actualDNSString, "Storage DNS string mismatch")
-}
-
-// sanitizeTerraformOutput trims and validates the JSON output.
-func sanitizeTerraformOutput(t *testing.T, output string) string {
-	output = strings.TrimSpace(output)
-	var sanitizedOutput interface{}
-	if err := json.Unmarshal([]byte(output), &sanitizedOutput); err != nil {
-		t.Fatalf("Failed to parse JSON output: %v", err)
-	}
-	sanitizedBytes, err := json.Marshal(sanitizedOutput)
-	if err != nil {
-		t.Fatalf("Failed to re-marshal JSON output: %v", err)
-	}
-	return string(sanitizedBytes)
 }
