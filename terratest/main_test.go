@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -25,7 +26,11 @@ func TestTerraformAzureStorage(t *testing.T) {
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"postfix": strings.ToLower(uniquePostfix),
+			"subscription":  os.Getenv("AZURE_SUBSCRIPTION_ID"),
+			"client_id":     os.Getenv("AZURE_CLIENT_ID"),
+			"client_secret": os.Getenv("AZURE_CLIENT_SECRET"),
+			"tenant_id":     os.Getenv("AZURE_TENANT_ID"),
+			"postfix":       strings.ToLower(uniquePostfix),
 		},
 	}
 

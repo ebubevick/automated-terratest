@@ -4,23 +4,21 @@ variable "subscription" {
   default     = "4bf3e463-ed9f-4148-8906-3eed094e0794"
 }
 
-# variable "client_id" {
-#   description = "Azure client ID"
-#   type        = string
-#   default     = ""
-# }
+variable "client_id" {
+  description = "Azure client ID"
+  type        = string
+}
 
-# variable "client_secret" {
-#   description = "Azure client secret"
-#   type        = string
-#   default     = ""
-# }
+variable "client_secret" {
+  description = "Azure client secret"
+  type        = string
+  sensitive   = true
+}
 
-# variable "tenant_id" {
-#   description = "Azure tenant ID"
-#   type        = string
-#   default     = ""
-# }
+variable "tenant_id" {
+  description = "Azure tenant ID"
+  type        = string
+}
 
 variable "location" {
   description = "The location to set for the storage account."
@@ -47,7 +45,7 @@ variable "storage_replication_type" {
 }
 
 variable "container_access_type" {
-  description = "The replication type of storage account to set"
+  description = "The access level for the storage container (e.g., private, blob, container)"
   type        = string
   default     = "private"
 }
