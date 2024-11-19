@@ -32,11 +32,6 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Install dependencies
-      run: |
-        cd terratest
-        go mod tidy
-
     - name: Run Terratest
       env:
         ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
