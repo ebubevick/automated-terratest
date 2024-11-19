@@ -19,6 +19,11 @@ func TestTerraformAzureStorage(t *testing.T) {
 	subscriptionID := "4bf3e463-ed9f-4148-8906-3eed094e0794"
 	uniquePostfix := random.UniqueId()
 
+	fmt.Println("AZURE_SUBSCRIPTION_ID:", os.Getenv("AZURE_SUBSCRIPTION_ID"))
+	fmt.Println("AZURE_CLIENT_ID:", os.Getenv("AZURE_CLIENT_ID"))
+	fmt.Println("AZURE_CLIENT_SECRET:", os.Getenv("AZURE_CLIENT_SECRET"))
+	fmt.Println("AZURE_TENANT_ID:", os.Getenv("AZURE_TENANT_ID"))
+
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
@@ -26,11 +31,11 @@ func TestTerraformAzureStorage(t *testing.T) {
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"subscription":  os.Getenv("AZURE_SUBSCRIPTION_ID"),
-			"client_id":     os.Getenv("AZURE_CLIENT_ID"),
-			"client_secret": os.Getenv("AZURE_CLIENT_SECRET"),
-			"tenant_id":     os.Getenv("AZURE_TENANT_ID"),
-			"postfix":       strings.ToLower(uniquePostfix),
+			"subscription_id": os.Getenv("AZURE_SUBSCRIPTION_ID"),
+			"client_id":       os.Getenv("AZURE_CLIENT_ID"),
+			"client_secret":   os.Getenv("AZURE_CLIENT_SECRET"),
+			"tenant_id":       os.Getenv("AZURE_TENANT_ID"),
+			"postfix":         strings.ToLower(uniquePostfix),
 		},
 	}
 

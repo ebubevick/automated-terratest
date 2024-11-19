@@ -22,17 +22,21 @@ jobs:
       with:
         go-version: '1.20'
 
-    - name: Verify Go version
-      run: go version
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.6
 
     - name: Authenticate to Azure
       run: |
         az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.5.6
+    - name: Print Environment Variables
+      run: |
+        echo "ARM_CLIENT_ID: $ARM_CLIENT_ID"
+        echo "ARM_CLIENT_SECRET: $ARM_CLIENT_SECRET"
+        echo "ARM_TENANT_ID: $ARM_TENANT_ID"
+        echo "ARM_SUBSCRIPTION_ID: $ARM_SUBSCRIPTION_ID"
 
     - name: Install dependencies
       run: |
