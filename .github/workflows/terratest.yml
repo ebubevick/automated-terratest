@@ -39,10 +39,10 @@ jobs:
 
     - name: Run Terratest
       env:
-        ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        subscription: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        client_id: ${{ secrets.AZURE_CLIENT_ID }}
+        client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+        tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       run: |
         cd terratest
         go test -v -timeout 10m
