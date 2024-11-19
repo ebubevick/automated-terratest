@@ -45,4 +45,4 @@ jobs:
         ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       run: |
         cd terratest
-        go test -v -timeout 30m
+        go test -v -timeout 10m
