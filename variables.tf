@@ -1,3 +1,23 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# ENVIRONMENT VARIABLES
+# Define these secrets as environment variables
+# ---------------------------------------------------------------------------------------------------------------------
+
+# ARM_CLIENT_ID
+# ARM_CLIENT_SECRET
+# ARM_SUBSCRIPTION_ID
+# ARM_TENANT_ID
+
+# ---------------------------------------------------------------------------------------------------------------------
+# REQUIRED PARAMETERS
+# You must provide a value for each of these parameters.
+# ---------------------------------------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL PARAMETERS
+# These parameters have reasonable defaults.
+# ---------------------------------------------------------------------------------------------------------------------
+
 variable "subscription" {
   description = "Azure subscription ID"
   type        = string
@@ -44,7 +64,7 @@ variable "storage_replication_type" {
 }
 
 variable "container_access_type" {
-  description = "The access level for the storage container (e.g., private, blob, container)"
+  description = "The replication type of storage account to set"
   type        = string
   default     = "private"
 }

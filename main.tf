@@ -1,4 +1,10 @@
-# Azure provider configuration
+# ---------------------------------------------------------------------------------------------------------------------
+# DEPLOY A STORAGE ACCOUNT SET
+# This is an example of how to deploy a Storage Account.
+# ---------------------------------------------------------------------------------------------------------------------
+# See test/azure/terraform_azure_storage_example_test.go for how to write automated tests for this code.
+# ---------------------------------------------------------------------------------------------------------------------
+
 provider "azurerm" {
   features {}
   subscription_id = var.subscription
@@ -7,7 +13,12 @@ provider "azurerm" {
   tenant_id       = var.tenant_id
 }
 
+# PIN TERRAFORM VERSION
+
 terraform {
+  # This module is now only being tested with Terraform 0.13.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 0.13.x code.
   required_version = ">= 0.12.26"
   required_providers {
     azurerm = {
@@ -39,9 +50,12 @@ resource "azurerm_storage_account" "storage_account" {
   account_replication_type = var.storage_replication_type
 }
 
-# Blob Container
+# ---------------------------------------------------------------------------------------------------------------------
+# ADD A CONTAINER TO THE STORAGE ACCOUNT
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "azurerm_storage_container" "container" {
-  name                  = "blobcontainer1"
+  name                  = "container1"
   storage_account_name  = azurerm_storage_account.storage_account.name
   container_access_type = var.container_access_type
 }

@@ -15,7 +15,8 @@ import (
 func TestTerraformAzureStorage(t *testing.T) {
 	t.Parallel()
 
-	// Use random postfix to ensure unique resources
+	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
+	// subscriptionID := ""
 	uniquePostfix := random.UniqueId()
 
 	// Get the environment variables
@@ -51,10 +52,10 @@ func TestTerraformAzureStorage(t *testing.T) {
 	// Cleanup after test
 	defer terraform.Destroy(t, terraformOptions)
 
-	// Run `terraform init` and `terraform apply`
+	// website::tag::2:: Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
 	terraform.InitAndApply(t, terraformOptions)
 
-	// Validate outputs
+	// website::tag::3:: Run `terraform output` to get the values of output variables
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	storageAccountName := terraform.Output(t, terraformOptions, "storage_account_name")
 	storageAccountTier := terraform.Output(t, terraformOptions, "storage_account_account_tier")
@@ -62,26 +63,26 @@ func TestTerraformAzureStorage(t *testing.T) {
 	storageBlobContainerName := terraform.Output(t, terraformOptions, "storage_container_name")
 	storageFileShareName := terraform.Output(t, terraformOptions, "storage_fileshare_name")
 
-	// Assertions using Azure SDK
-	storageAccountExists := azure.StorageAccountExists(t, storageAccountName, resourceGroupName, "")
+	// website::tag::4:: Verify storage account properties and ensure it matches the output.
+	storageAccountExists := azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscription)
 	assert.True(t, storageAccountExists, "storage account does not exist")
 
-	containerExists := azure.StorageBlobContainerExists(t, storageBlobContainerName, storageAccountName, resourceGroupName, "")
+	containerExists := azure.StorageBlobContainerExists(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription)
 	assert.True(t, containerExists, "storage container does not exist")
 
 	fileShareExists := azure.StorageFileShareExists(t, storageFileShareName, storageAccountName, resourceGroupName, "")
 	assert.True(t, fileShareExists, "File share does not exist")
 
-	publicAccess := azure.GetStorageBlobContainerPublicAccess(t, storageBlobContainerName, storageAccountName, resourceGroupName, "")
+	publicAccess := azure.GetStorageBlobContainerPublicAccess(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription)
 	assert.False(t, publicAccess, "storage container has public access")
 
-	accountKind := azure.GetStorageAccountKind(t, storageAccountName, resourceGroupName, "")
+	accountKind := azure.GetStorageAccountKind(t, storageAccountName, resourceGroupName, subscription)
 	assert.Equal(t, storageAccountKind, accountKind, "storage account kind mismatch")
 
-	skuTier := azure.GetStorageAccountSkuTier(t, storageAccountName, resourceGroupName, "")
+	skuTier := azure.GetStorageAccountSkuTier(t, storageAccountName, resourceGroupName, subscription)
 	assert.Equal(t, storageAccountTier, skuTier, "sku tier mismatch")
 
-	actualDNSString := azure.GetStorageDNSString(t, storageAccountName, resourceGroupName, "")
+	actualDNSString := azure.GetStorageDNSString(t, storageAccountName, resourceGroupName, subscription)
 	storageSuffix, _ := azure.GetStorageURISuffixE()
 	expectedDNS := fmt.Sprintf("https://%s.blob.%s/", storageAccountName, storageSuffix)
 	assert.Equal(t, expectedDNS, actualDNSString, "Storage DNS string mismatch")
