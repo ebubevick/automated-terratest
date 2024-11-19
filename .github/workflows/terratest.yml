@@ -28,15 +28,10 @@ jobs:
         terraform_version: 1.5.6
 
     - name: Authenticate to Azure
-      run: |
-        az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
-
-    - name: Print Environment Variables
-      run: |
-        echo "ARM_CLIENT_ID: $ARM_CLIENT_ID"
-        echo "ARM_CLIENT_SECRET: $ARM_CLIENT_SECRET"
-        echo "ARM_TENANT_ID: $ARM_TENANT_ID"
-        echo "ARM_SUBSCRIPTION_ID: $ARM_SUBSCRIPTION_ID"
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        enable-AzPSSession: true
 
     - name: Install dependencies
       run: |
@@ -44,11 +39,6 @@ jobs:
         go mod tidy
 
     - name: Run Terratest
-      env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       run: |
         cd terratest
         go test -v -timeout 10m
