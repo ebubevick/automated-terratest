@@ -1,4 +1,4 @@
-variable "subscription" {
+variable "subscription_id" {
   description = "Azure subscription ID"
   type        = string
   default     = "4bf3e463-ed9f-4148-8906-3eed094e0794"
