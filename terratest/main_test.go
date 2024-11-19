@@ -42,18 +42,18 @@ func TestTerraformAzureStorage(t *testing.T) {
 	// Cleanup after test
 	defer terraform.Destroy(t, terraformOptions)
 
-	// website::tag::2:: Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
+	// Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
 	terraform.InitAndApply(t, terraformOptions)
 
-	// website::tag::3:: Run `terraform output` to get the values of output variables
-	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
-	storageAccountName := terraform.Output(t, terraformOptions, "storage_account_name")
-	storageAccountTier := terraform.Output(t, terraformOptions, "storage_account_account_tier")
-	storageAccountKind := terraform.Output(t, terraformOptions, "storage_account_account_kind")
-	storageBlobContainerName := terraform.Output(t, terraformOptions, "storage_container_name")
-	storageFileShareName := terraform.Output(t, terraformOptions, "storage_fileshare_name")
+	// Run `terraform output` to get the values of output variables and sanitize them
+	resourceGroupName := strings.TrimSpace(terraform.Output(t, terraformOptions, "resource_group_name"))
+	storageAccountName := strings.TrimSpace(terraform.Output(t, terraformOptions, "storage_account_name"))
+	storageAccountTier := strings.TrimSpace(terraform.Output(t, terraformOptions, "storage_account_account_tier"))
+	storageAccountKind := strings.TrimSpace(terraform.Output(t, terraformOptions, "storage_account_account_kind"))
+	storageBlobContainerName := strings.TrimSpace(terraform.Output(t, terraformOptions, "storage_container_name"))
+	storageFileShareName := strings.TrimSpace(terraform.Output(t, terraformOptions, "storage_fileshare_name"))
 
-	// website::tag::4:: Verify storage account properties and ensure it matches the output.
+	// Verify storage account properties and ensure it matches the output.
 	storageAccountExists := azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscription)
 	assert.True(t, storageAccountExists, "storage account does not exist")
 
