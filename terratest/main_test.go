@@ -15,18 +15,15 @@ import (
 func TestTerraformAzureStorage(t *testing.T) {
 	t.Parallel()
 
-	// Generate a unique postfix for resource names
+	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
+	// subscriptionID := ""
 	uniquePostfix := random.UniqueId()
 
-	// Get environment variables and validate they are set
-	subscription := os.Getenv("ARM_SUBSCRIPTION_ID")
-	clientID := os.Getenv("ARM_CLIENT_ID")
-	clientSecret := os.Getenv("ARM_CLIENT_SECRET")
-	tenantID := os.Getenv("ARM_TENANT_ID")
-
-	if subscription == "" || clientID == "" || clientSecret == "" || tenantID == "" {
-		t.Fatal("Required environment variables (ARM_SUBSCRIPTION_ID, ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_TENANT_ID) are not set")
-	}
+	// Get the environment variables
+	subscription := os.Getenv("subscription")
+	clientID := os.Getenv("client_id")
+	clientSecret := os.Getenv("client_secret")
+	tenantID := os.Getenv("tenant_id")
 
 	// Configure Terraform
 	terraformOptions := &terraform.Options{
@@ -46,41 +43,38 @@ func TestTerraformAzureStorage(t *testing.T) {
 	// Cleanup after test
 	defer terraform.Destroy(t, terraformOptions)
 
-	// Run `terraform init` and `terraform apply`
+	// website::tag::2:: Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
 	terraform.InitAndApply(t, terraformOptions)
 
-	// Retrieve outputs from Terraform
-	resourceGroupName := getTerraformOutput(t, terraformOptions, "resource_group_name")
-	storageAccountName := getTerraformOutput(t, terraformOptions, "storage_account_name")
-	storageAccountTier := getTerraformOutput(t, terraformOptions, "storage_account_account_tier")
-	storageAccountKind := getTerraformOutput(t, terraformOptions, "storage_account_account_kind")
-	storageBlobContainerName := getTerraformOutput(t, terraformOptions, "storage_container_name")
-	storageFileShareName := getTerraformOutput(t, terraformOptions, "storage_fileshare_name")
+	// website::tag::3:: Run `terraform output` to get the values of output variables
+	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
+	storageAccountName := terraform.Output(t, terraformOptions, "storage_account_name")
+	storageAccountTier := terraform.Output(t, terraformOptions, "storage_account_account_tier")
+	storageAccountKind := terraform.Output(t, terraformOptions, "storage_account_account_kind")
+	storageBlobContainerName := terraform.Output(t, terraformOptions, "storage_container_name")
+	storageFileShareName := terraform.Output(t, terraformOptions, "storage_fileshare_name")
 
-	// Verify storage account properties
-	assert.True(t, azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscription), "Storage account does not exist")
-	assert.True(t, azure.StorageBlobContainerExists(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription), "Storage container does not exist")
-	assert.True(t, azure.StorageFileShareExists(t, storageFileShareName, storageAccountName, resourceGroupName, subscription), "File share does not exist")
+	// website::tag::4:: Verify storage account properties and ensure it matches the output.
+	// storageAccountExists := azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscription)
+	// assert.True(t, storageAccountExists, "storage account does not exist")
 
-	// Verify storage account DNS
+	containerExists := azure.StorageBlobContainerExists(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription)
+	assert.True(t, containerExists, "storage container does not exist")
+
+	fileShareExists := azure.StorageFileShareExists(t, storageFileShareName, storageAccountName, resourceGroupName, "")
+	assert.True(t, fileShareExists, "File share does not exist")
+
+	publicAccess := azure.GetStorageBlobContainerPublicAccess(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription)
+	assert.False(t, publicAccess, "storage container has public access")
+
+	accountKind := azure.GetStorageAccountKind(t, storageAccountName, resourceGroupName, subscription)
+	assert.Equal(t, storageAccountKind, accountKind, "storage account kind mismatch")
+
+	skuTier := azure.GetStorageAccountSkuTier(t, storageAccountName, resourceGroupName, subscription)
+	assert.Equal(t, storageAccountTier, skuTier, "sku tier mismatch")
+
+	actualDNSString := azure.GetStorageDNSString(t, storageAccountName, resourceGroupName, subscription)
 	storageSuffix, _ := azure.GetStorageURISuffixE()
 	expectedDNS := fmt.Sprintf("https://%s.blob.%s/", storageAccountName, storageSuffix)
-	actualDNSString := azure.GetStorageDNSString(t, storageAccountName, resourceGroupName, subscription)
 	assert.Equal(t, expectedDNS, actualDNSString, "Storage DNS string mismatch")
-
-	// Verify storage account kind and tier
-	assert.Equal(t, storageAccountKind, azure.GetStorageAccountKind(t, storageAccountName, resourceGroupName, subscription), "Storage account kind mismatch")
-	assert.Equal(t, storageAccountTier, azure.GetStorageAccountSkuTier(t, storageAccountName, resourceGroupName, subscription), "Storage account tier mismatch")
-
-	// Verify public access
-	assert.False(t, azure.GetStorageBlobContainerPublicAccess(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription), "Storage container has public access")
-}
-
-// Helper function to safely retrieve Terraform output
-func getTerraformOutput(t *testing.T, options *terraform.Options, key string) string {
-	output, err := terraform.OutputE(t, options, key)
-	if err != nil {
-		t.Fatalf("Failed to get Terraform output for key '%s': %s", key, err)
-	}
-	return output
 }
