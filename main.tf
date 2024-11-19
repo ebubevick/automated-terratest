@@ -33,7 +33,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "resource_group" {
-  name     = "terratest-storage-rg-${var.postfix}"
+  name     = "terratest-storage-rg"
   location = var.location
 }
 

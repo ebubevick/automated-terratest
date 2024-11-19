@@ -16,7 +16,6 @@ func TestTerraformAzureStorage(t *testing.T) {
 	t.Parallel()
 
 	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
-	// subscriptionID := ""
 	uniquePostfix := random.UniqueId()
 
 	// Get the environment variables
@@ -55,8 +54,8 @@ func TestTerraformAzureStorage(t *testing.T) {
 	storageFileShareName := terraform.Output(t, terraformOptions, "storage_fileshare_name")
 
 	// website::tag::4:: Verify storage account properties and ensure it matches the output.
-	// storageAccountExists := azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscription)
-	// assert.True(t, storageAccountExists, "storage account does not exist")
+	storageAccountExists := azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscription)
+	assert.True(t, storageAccountExists, "storage account does not exist")
 
 	containerExists := azure.StorageBlobContainerExists(t, storageBlobContainerName, storageAccountName, resourceGroupName, subscription)
 	assert.True(t, containerExists, "storage container does not exist")
